@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import 'bulma/css/bulma.css';
+import 'font-awesome/css/font-awesome.css'
 
 class App extends Component {
   render() {
@@ -18,12 +19,20 @@ class App extends Component {
                 <div className="column is-12 has-text-centered is-mobile">
                   <a className="button is-primary">
                     <span class="icon">
-                      <i class="fa fa-home"></i>
+                      <i class="fa fa-thumbs-down"></i>
                     </span>
                   </a>
-                  <a className="button is-primary">-1</a>
-                  <a className="button is-primary">+2</a>
-                  <a className="button is-primary">Crash</a>
+                  <a className="button is-warning">+2</a>
+                  <a className="button is-danger">
+                    <span class="icon">
+                      <i class="fa fa-bomb"></i>
+                    </span>
+                  </a>
+                  <a className="button is-primary">
+                    <span class="icon">
+                      <i class="fa fa-thumbs-up"></i>
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
