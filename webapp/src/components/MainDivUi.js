@@ -1,36 +1,37 @@
 import React, { Component } from "react";
 import WsButton from "./WsButton";
+import { API_URL } from "../index";
 
 class MainDivUi extends Component {
 
   componentDidMount() {
-    this.getInitialState();
+    this.fetchState();
   }
 
-  getInitialState() {
-    console.log("fetching");
-    fetch('http://localhost:9000/api/es/').then((response) => response.json().then((data) =>
-      this.setState({value: data})
-    ));
+  fetchState() {
+    fetch("http://" +API_URL).then((response) => response.json().then((data) =>
+      this.props.updateState({value: data})
+  ));
   }
 
   constructor(props) {
     super(props);
     this.setState = this.setState.bind(this);
-    this.state = {value: "-"};
+    this.fetchState = this.fetchState.bind(this);
+    //this.state = {value: "-"};
     this.websocket = this.setupSocket()
   }
 
   setupSocket = () => {
     var webSocket;
-    webSocket = new WebSocket("ws://localhost:9000/api/es/ws");
+    webSocket = new WebSocket("ws://" +API_URL + "ws");
     webSocket.onopen = () => {
       console.log("socket open and ready!");
     };
 
     webSocket.onmessage = (msg) => {
-      console.log("Got a msg", msg);
-      this.setState({value: msg.data});
+      var action = {value: msg.data};
+      this.props.updateState(action);
     };
 
     webSocket.onclose = () => {
@@ -48,7 +49,7 @@ class MainDivUi extends Component {
           <div className="column is-8-desktop is-offset-2-desktop is-12-mobile box">
             <div className="columns">
               <div className="column is-12 has-text-centered content">
-                <span className="huge-number">{this.state.value}</span>
+                <span className="huge-number">{this.props.value}</span>
               </div>
             </div>
             <div className="columns">

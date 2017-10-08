@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import Header from './Header';
-import {loginUser} from '../actions/login'
+import {updateState} from '../actions/index'
+import MainDivUi from "./MainDivUi";
 
-class MainDiv extends Component {
+// eslint-disable-next-line
+class MainDivContainer extends Component {
   render() {
-    return <MainDivUi />
+    return <MainDivUi updateState={updateState}/>
   }
 }
 
@@ -17,7 +18,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    loginUser: (user) => dispatch(loginUser(user))
+    updateState: (state) => dispatch(updateState(state))
   }
 }
 
@@ -25,4 +26,4 @@ function mapDispatchToProps(dispatch) {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Header);
+)(MainDivUi);

@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import './App.css';
 import 'bulma/css/bulma.css';
 import 'font-awesome/css/font-awesome.css'
-import MainDivUi from "./components/MainDivUi";
+import MainDivContainer from "./components/MainDivContainer";
 
 class App extends Component {
   render() {
     return (
       <section className="section">
-        <MainDivUi/>
+        <MainDivContainer />
       </section>
     )
       ;
