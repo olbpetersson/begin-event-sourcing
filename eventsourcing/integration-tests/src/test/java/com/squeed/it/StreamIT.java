@@ -10,7 +10,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.squeed.stream.api.StreamService;
-import com.squeed.eventsourcing.api.GreetingMessage;
 import com.squeed.eventsourcing.api.HelloService;
 
 import java.net.URI;

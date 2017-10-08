@@ -10,6 +10,8 @@ import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
 import com.lightbend.lagom.javadsl.pubsub.TopicId;
 import com.squeed.eventsourcing.api.EventSourcingService;
+import com.squeed.eventsourcing.impl.commands.AddValueCommand;
+import com.squeed.eventsourcing.impl.commands.GetStateCommand;
 import play.Logger;
 
 import javax.inject.Inject;
@@ -21,9 +23,12 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
  */
 public class EventSourcingServiceImpl implements EventSourcingService {
 
-    private final PersistentEntityRegistry persistentEntityRegistry;
+    public static final String HARD_CODED_QUALIFIER = "hard-coded-qualifier";
+    public static final String HARD_CODED_ID = "hard-coded-id";
+    private PersistentEntityRegistry persistentEntityRegistry;
     private Materializer materializer;
     private PubSubRegistry pubSubRegistry;
+    private PersistentEntityRef ref;
 
     @Inject
     public EventSourcingServiceImpl(PersistentEntityRegistry persistentEntityRegistry, Materializer materializer,
@@ -31,21 +36,29 @@ public class EventSourcingServiceImpl implements EventSourcingService {
         this.persistentEntityRegistry = persistentEntityRegistry;
         this.materializer = materializer;
         this.pubSubRegistry = pubSubRegistry;
+        this.persistentEntityRegistry = persistentEntityRegistry;
         persistentEntityRegistry.register(EventSourcingEntity.class);
+        ref = persistentEntityRegistry.refFor(EventSourcingEntity.class, HARD_CODED_ID);
     }
 
     @Override
     public ServiceCall<Source<Integer, ?>, Source<Integer, NotUsed>> voteStream() {
         return inputStream -> {
             inputStream.runForeach(input -> {
-                MyWriteCommand myWriteCommand = new MyWriteCommand(input);
-                PersistentEntityRef ref = persistentEntityRegistry.refFor(EventSourcingEntity.class, "hard-coded-id");
-                ref.ask(myWriteCommand);
+                Logger.info("Got input {}", input);
+                AddValueCommand addValueCommand = new AddValueCommand(input);
+                ref.ask(addValueCommand);
             }, materializer);
-            PubSubRef pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, "hard-coded-qualifier"));
-            Logger.info("Informing subscribers to id {} from voteStream");
+            PubSubRef pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, HARD_CODED_QUALIFIER));
+            Logger.info("Informing subscribers from voteStream");
             return completedFuture(pubSubRef.subscriber());
         };
+    }
+
+    @Override
+    public ServiceCall<NotUsed, Integer> getState() {
+        return request -> ref.ask(new GetStateCommand()).thenApply(response ->
+                new Integer (((EventSourcingState) response).getValue()));
     }
 
 }
