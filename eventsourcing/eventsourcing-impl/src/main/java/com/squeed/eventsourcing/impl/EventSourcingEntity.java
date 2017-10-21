@@ -15,7 +15,7 @@ import play.Logger;
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class EventSourcingEntity extends PersistentEntity<ValueCommand, ValueEvent, EventSourcingState> {
+public class EventSourcingEntity extends PersistentEntity<ValueCommand, ValueEvent, ValueState> {
 
     private PubSubRegistry pubSubRegistry;
     private PubSubRef pubSubRef;
@@ -29,13 +29,15 @@ public class EventSourcingEntity extends PersistentEntity<ValueCommand, ValueEve
 
     }
 
+
+
     @Override
-    public Behavior initialBehavior(Optional<EventSourcingState> snapshotState) {
-        BehaviorBuilder behaviorBuilder = newBehaviorBuilder(snapshotState.orElse(new EventSourcingState(0)));
+    public Behavior initialBehavior(Optional<ValueState> snapshotState) {
+        BehaviorBuilder behaviorBuilder = newBehaviorBuilder(snapshotState.orElse(new ValueState(0)));
 
         behaviorBuilder.setCommandHandler(AddValueCommand.class, (cmd, ctx) -> {
             Integer value = cmd.getValue();
-            Logger.info("Got a command to add value: {}", value);
+            Logger.info("\n\n ---  Got a command to add value: {}", value);
             Assert.isTrue(value.equals(-1) || value.equals(1));
             return ctx.thenPersist(new ValueAddedEvent(value));
         });
@@ -43,20 +45,15 @@ public class EventSourcingEntity extends PersistentEntity<ValueCommand, ValueEve
         behaviorBuilder.setReadOnlyCommandHandler(GetStateCommand.class, (cmd, ctx) -> ctx.reply(state()));
 
         behaviorBuilder.setEventHandler(ValueAddedEvent.class, evt -> {
-                    Logger.info("Got event with value: {}. Current state: {}", evt.getValue(), state().getValue());
-                    final EventSourcingState newState = new EventSourcingState(state().getValue() + evt.getValue());
+                    Logger.info("\n\n --- Got event with value: {}. Current state: {}", evt.getValue(), state().getValue());
+                    final ValueState newState = new ValueState(state().getValue() + evt.getValue());
                     pubSubRef.publish(newState.getValue());
+                    Logger.info("\n\n --- New state is {} ", newState.getValue());
                     return newState;
                 }
         );
 
         return behaviorBuilder.build();
-
-
-        /*
-            There also exists behaviorBuilder.setReadOnlyCommandHandler();
-            and behaviorBuilder.setEventHandlerChangingBehavior();
-        */
 
     }
 

@@ -45,12 +45,10 @@ public class EventSourcingServiceImpl implements EventSourcingService {
     public ServiceCall<Source<Integer, ?>, Source<Integer, NotUsed>> voteStream() {
         return inputStream -> {
             inputStream.runForeach(input -> {
-                Logger.info("Got input {}", input);
                 AddValueCommand addValueCommand = new AddValueCommand(input);
                 ref.ask(addValueCommand);
             }, materializer);
             PubSubRef pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, HARD_CODED_QUALIFIER));
-            Logger.info("Informing subscribers from voteStream");
             return completedFuture(pubSubRef.subscriber());
         };
     }
@@ -58,7 +56,7 @@ public class EventSourcingServiceImpl implements EventSourcingService {
     @Override
     public ServiceCall<NotUsed, Integer> getState() {
         return request -> ref.ask(new GetStateCommand()).thenApply(response ->
-                new Integer (((EventSourcingState) response).getValue()));
+                new Integer (((ValueState) response).getValue()));
     }
 
 }
