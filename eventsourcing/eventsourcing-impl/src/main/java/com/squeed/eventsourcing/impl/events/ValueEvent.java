@@ -1,6 +1,6 @@
 package com.squeed.eventsourcing.impl.events;
 
-import com.lightbend.lagom.serialization.Jsonable;
+import java.io.Serializable;
 
-public interface ValueEvent extends Jsonable {
+public interface ValueEvent extends Serializable {
 }

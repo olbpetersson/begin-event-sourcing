@@ -6,5 +6,6 @@ import com.squeed.eventsourcing.impl.ValueState;
 
 import java.io.Serializable;
 
-public interface ValueCommand extends Jsonable, Serializable, PersistentEntity.ReplyType<ValueState> {
+public interface ValueCommand
+        extends Serializable, PersistentEntity.ReplyType<ValueState> {
 }

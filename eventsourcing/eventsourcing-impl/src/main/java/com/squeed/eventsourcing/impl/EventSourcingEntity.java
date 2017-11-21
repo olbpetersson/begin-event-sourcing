@@ -15,7 +15,8 @@ import play.Logger;
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class EventSourcingEntity extends PersistentEntity<ValueCommand, ValueEvent, ValueState> {
+public class EventSourcingEntity
+        extends PersistentEntity<ValueCommand, ValueEvent, ValueState> {
 
     private PubSubRegistry pubSubRegistry;
     private PubSubRef pubSubRef;
