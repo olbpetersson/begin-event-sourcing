@@ -9,7 +9,6 @@ import com.squeed.eventsourcing.impl.commands.GetStateCommand;
 import com.squeed.eventsourcing.impl.commands.ValueCommand;
 import com.squeed.eventsourcing.impl.events.ValueAddedEvent;
 import com.squeed.eventsourcing.impl.events.ValueEvent;
-import org.springframework.util.Assert;
 import play.Logger;
 
 import javax.inject.Inject;
@@ -25,9 +24,7 @@ public class EventSourcingEntity
     @Inject
     public EventSourcingEntity(PubSubRegistry pubSubRegistry) {
         this.pubSubRegistry = pubSubRegistry;
-        pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, EventSourcingServiceImpl.HARD_CODED_QUALIFIER));
-
-
+        this.pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, EventSourcingServiceImpl.HARD_CODED_QUALIFIER));
     }
 
 
@@ -39,7 +36,9 @@ public class EventSourcingEntity
         behaviorBuilder.setCommandHandler(AddValueCommand.class, (cmd, ctx) -> {
             Integer value = cmd.getValue();
             Logger.info("\n\n ---  Got a command to add value: {}", value);
-            Assert.isTrue(value.equals(-1) || value.equals(1));
+            if(!(value.equals(-1) || value.equals(1))) {
+                throw new IllegalArgumentException(String.format("%s is not a legal value", value));
+            }
             return ctx.thenPersist(new ValueAddedEvent(value));
         });
 
