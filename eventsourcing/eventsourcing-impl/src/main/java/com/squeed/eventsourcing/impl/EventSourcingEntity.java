@@ -27,15 +27,14 @@ public class EventSourcingEntity
         this.pubSubRef = pubSubRegistry.refFor(TopicId.of(Integer.class, EventSourcingServiceImpl.HARD_CODED_QUALIFIER));
     }
 
-
-
     @Override
     public Behavior initialBehavior(Optional<ValueState> snapshotState) {
-        BehaviorBuilder behaviorBuilder = newBehaviorBuilder(snapshotState.orElse(new ValueState(0)));
+        BehaviorBuilder behaviorBuilder =
+                newBehaviorBuilder(snapshotState.orElse(new ValueState(0)));
 
         behaviorBuilder.setCommandHandler(AddValueCommand.class, (cmd, ctx) -> {
             Integer value = cmd.getValue();
-            Logger.info("\n\n ---  Got a command to add value: {}", value);
+            Logger.info("\n --- Current state: {}\n --- Got a command to add value: {}", state().getValue(), value);
             if(!(value.equals(-1) || value.equals(1))) {
                 throw new IllegalArgumentException(String.format("%s is not a legal value", value));
             }
@@ -45,10 +44,11 @@ public class EventSourcingEntity
         behaviorBuilder.setReadOnlyCommandHandler(GetStateCommand.class, (cmd, ctx) -> ctx.reply(state()));
 
         behaviorBuilder.setEventHandler(ValueAddedEvent.class, evt -> {
-                    Logger.info("\n\n --- Got event with value: {}. Current state: {}", evt.getValue(), state().getValue());
-                    final ValueState newState = new ValueState(state().getValue() + evt.getValue());
+                    Logger.info("\n --- Applying event with value: {}", evt.getValue());
+                    final ValueState newState = new ValueState(state().getValue()
+                            + evt.getValue());
                     pubSubRef.publish(newState.getValue());
-                    Logger.info("\n\n --- New state is {} ", newState.getValue());
+                    Logger.info("\n --- New state is {} + {}: {} \n\n", state().getValue(), evt.getValue(), newState.getValue());
                     return newState;
                 }
         );
@@ -56,5 +56,4 @@ public class EventSourcingEntity
         return behaviorBuilder.build();
 
     }
-
 }
